@@ -46,6 +46,7 @@ type GCSFsConfig struct {
 	KeyPrefix            string `json:"key_prefix,omitempty"`
 	Credentials          string `json:"credentials,omitempty"`
 	AutomaticCredentials int    `json:"automatic_credentials,omitempty"`
+	Endpoint             string `json:"endpoint,omitempty"`
 	StorageClass         string `json:"storage_class,omitempty"`
 }
 

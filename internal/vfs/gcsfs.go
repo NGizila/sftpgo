@@ -47,6 +47,7 @@ import (
 
 const (
 	defaultGCSPageSize = 5000
+	gcsDefaultEndpoint = "storage.googleapis.com"
 )
 
 var (
@@ -90,14 +91,23 @@ func NewGCSFs(connectionID, localTempDir, mountPath string, config GCSFsConfig) 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	clientOpts := []option.ClientOption{}
+
+    if fs.config.Endpoint == "" {
+        fs.config.Endpoint = gcsDefaultEndpoint
+    }
+
+    clientOpts = append(clientOpts, option.WithEndpoint(fs.config.Endpoint))
+
 	if fs.config.AutomaticCredentials > 0 {
-		fs.svc, err = storage.NewClient(ctx)
+		fs.svc, err = storage.NewClient(ctx, clientOpts...)
 	} else {
 		err = fs.config.Credentials.TryDecrypt()
 		if err != nil {
 			return fs, err
 		}
-		fs.svc, err = storage.NewClient(ctx, option.WithCredentialsJSON([]byte(fs.config.Credentials.GetPayload())))
+		clientOpts = append(clientOpts, option.WithCredentialsJSON([]byte(fs.config.Credentials.GetPayload())))
+        fs.svc, err = storage.NewClient(ctx, clientOpts...)
 	}
 	return fs, err
 }
